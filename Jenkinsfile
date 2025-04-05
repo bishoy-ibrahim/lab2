@@ -1,47 +1,29 @@
 pipeline {
     agent any
 
-    environment {
-        // Optional environment variables
-        PROJECT_NAME = "MyProject"
+    parameters {
+        string(name: 'VERSION', defaultValue: '1.0.0', description: 'Enter the app version')
+        choice(name: 'ENV', choices: ['dev', 'test', 'prod'], description: 'Choose environment')
+        booleanParam(name: 'RUN_TESTS', defaultValue: true, description: 'Run tests?')
     }
 
     stages {
-        stage('Checkout') {
+        stage('Print Parameters') {
             steps {
-                echo "Checking out code from Git..."
-                checkout scm
+                echo "Version: ${params.VERSION}"
+                echo "Environment: ${params.ENV}"
+                echo "Run Tests: ${params.RUN_TESTS}"
             }
         }
 
-        stage('Build') {
-            steps {
-                echo "Building the application..."
-                // Add your build commands here
+        stage('Conditional Stage') {
+            when {
+                expression { return params.RUN_TESTS }
             }
-        }
-
-        stage('Test') {
             steps {
                 echo "Running tests..."
-                // Add test commands here
+                // add your test commands here
             }
-        }
-
-        stage('Deploy') {
-            steps {
-                echo "Deploying application..."
-                // Add deploy logic here
-            }
-        }
-    }
-
-    post {
-        success {
-            echo 'Pipeline finished successfully!'
-        }
-        failure {
-            echo 'Pipeline failed!'
         }
     }
 }
