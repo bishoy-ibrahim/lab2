@@ -39,6 +39,7 @@ pipeline {
     post {
         success {
             echo 'Pipeline finished successfully!'
+            echo 'gethub trigger done'
         }
         failure {
             echo 'Pipeline failed!'
