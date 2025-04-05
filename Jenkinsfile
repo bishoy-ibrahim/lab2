@@ -1,29 +1,37 @@
 pipeline {
-    agent any
-
+     agent any
     parameters {
-        string(name: 'VERSION', defaultValue: '1.0.0', description: 'Enter the app version')
-        choice(name: 'ENV', choices: ['dev', 'test', 'prod'], description: 'Choose environment')
-        booleanParam(name: 'RUN_TESTS', defaultValue: true, description: 'Run tests?')
+        booleanParam(name:'project', defaultValue: true, description:'this paramater help you to know project name')
+        choice(name: 'namespace', choices:['dev','prod','stage'], description: '' ) 
     }
 
     stages {
-        stage('Print Parameters') {
+        stage('check') {
             steps {
-                echo "Version: ${params.VERSION}"
-                echo "Environment: ${params.ENV}"
-                echo "Run Tests: ${params.RUN_TESTS}"
+                echo "checking your code"
+                
+               
             }
         }
 
-        stage('Conditional Stage') {
+        stage('test') {
             when {
-                expression { return params.RUN_TESTS }
+                expression{
+                    params.project == false
+                }
             }
             steps {
-                echo "Running tests..."
-                // add your test commands here
+                echo "testing your app" 
             }
         }
+        
+        stage('deployment') {  
+            steps {
+                echo "kubectl apply -f deployment.yaml -n $params.namespace"
+                echo "your code is deployed right now"
+                echo "this build number $BUILD_NUMBER"
+            }
+        }    
     }
+
 }
