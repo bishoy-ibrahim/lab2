@@ -1,48 +1,43 @@
 pipeline {
-    agent any
+  agent any
 
-    environment {
-        // Optional environment variables
-        PROJECT_NAME = "MyProject"
+  environment {
+    TF_VAR_region = 'us-east-1'
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        git 'https://github.com/your/repo.git'
+      }
     }
 
-    stages {
-        stage('Checkout') {
-            steps {
-                echo "Checking out code from Git..."
-                checkout scm
-            }
-        }
-
-        stage('Build') {
-            steps {
-                echo "Building the application..."
-                // Add your build commands here
-            }
-        }
-
-        stage('Test') {
-            steps {
-                echo "Running tests..."
-                // Add test commands here
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                echo "Deploying application..."
-                // Add deploy logic here
-            }
-        }
+    stage('Terraform Init') {
+      steps {
+        sh 'terraform init'
+      }
     }
 
-    post {
-        success {
-            echo 'Pipeline finished successfully!'
-            echo 'gethub trigger done'
-        }
-        failure {
-            echo 'Pipeline failed!'
-        }
+    stage('Terraform Apply') {
+      steps {
+        sh 'terraform apply -auto-approve'
+        sleep(time: 60, unit: "SECONDS")
+      }
     }
+
+    stage('Update Inventory') {
+      steps {
+        script {
+          def ec2_ip = sh(script: "terraform output -raw ec2_public_ip", returnStdout: true).trim()
+          writeFile file: 'inventory.ini', text: "[web]\n${ec2_ip} ansible_user=ec2-user ansible_ssh_private_key_file=~/.ssh/Key1.ppk"
+        }
+      }
+    }
+
+    stage('Run Ansible') {
+      steps {
+        sh 'ansible-playbook playbook.yml'
+      }
+    }
+  }
 }
