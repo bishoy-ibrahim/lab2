@@ -6,8 +6,24 @@
       yum:
         name: httpd
         state: present
+
     - name: Start Apache
       service:
         name: httpd
         state: started
         enabled: true
+
+    - name: Add custom index.html
+      copy:
+        dest: /var/www/html/index.html
+        content: |
+          <html>
+            <head><title>Welcome</title></head>
+            <body>
+              <h1>Hello from Ansible!</h1>
+              <p>This is the default Apache page.</p>
+            </body>
+          </html>
+        owner: apache
+        group: apache
+        mode: '0644'
