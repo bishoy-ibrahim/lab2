@@ -35,7 +35,7 @@ pipeline {
       steps {
         script {
           def ec2_ip = sh(script: "terraform output -raw ec2_public_ip", returnStdout: true).trim()
-          writeFile file: 'inventory.ini', text: "[web]\n${ec2_ip} ansible_user=ec2-user ansible_ssh_private_key_file=~/.ssh/Key1.pem"
+          writeFile file: 'inventory.ini', text: "[web]\n${ec2_ip} ansible_user=ec2-user ansible_ssh_private_key_file=~/.ssh/terraform-project.pem"
         }
       }
     }
