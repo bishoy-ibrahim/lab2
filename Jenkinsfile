@@ -19,13 +19,16 @@ pipeline {
 
     stage('Terraform Init') {
       steps {
-        sh 'terraform init'
+        echo 'already done'
+        sh 'terraform --version'
       }
     }
 
     stage('Terraform Apply') {
       steps {
-        sh 'terraform apply -auto-approve'
+        withCredentials([usernamePassword(credentialsId: 'aws-creds', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+           sh 'terraform apply -auto-approve'
+        }
         sleep(time: 60, unit: "SECONDS")
       }
     }
