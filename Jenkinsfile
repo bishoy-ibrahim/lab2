@@ -1,8 +1,9 @@
 pipeline {
   agent any
-    tools {
-    terraform 'terraform'   // Name from Global Tool Configuration
-    ansible 'ansible'      // Name from Global Tool Configuration
+
+  tools {
+    terraform 'terraform-1.3'   // Name from Global Tool Configuration
+    ansible 'ansible-2.10'      // Name from Global Tool Configuration
   }
 
   environment {
@@ -18,30 +19,21 @@ pipeline {
 
     stage('Terraform Init') {
       steps {
-        script {
-          docker.image('hashicorp/terraform:light').inside('-v $PWD:/workspace -w /workspace') {
-            sh 'terraform init'
-          }
-        }
+        sh 'terraform init'
       }
     }
 
     stage('Terraform Apply') {
       steps {
-        script {
-          docker.image('hashicorp/terraform:light').inside('-v $PWD:/workspace -w /workspace') {
-            sh 'terraform apply -auto-approve'
-          }
-        }
+        sh 'terraform apply -auto-approve'
+        sleep(time: 60, unit: "SECONDS")
       }
     }
 
     stage('Update Inventory') {
       steps {
         script {
-          def ec2_ip = docker.image('hashicorp/terraform:light').inside('-v $PWD:/workspace -w /workspace') {
-            sh(script: "terraform output -raw ec2_public_ip", returnStdout: true).trim()
-          }
+          def ec2_ip = sh(script: "terraform output -raw ec2_public_ip", returnStdout: true).trim()
           writeFile file: 'inventory.ini', text: "[web]\n${ec2_ip} ansible_user=ec2-user ansible_ssh_private_key_file=~/.ssh/Key1.pem"
         }
       }
@@ -49,11 +41,7 @@ pipeline {
 
     stage('Run Ansible') {
       steps {
-        script {
-          docker.image('willhallonline/ansible:latest').inside('-v $PWD:/ansible -w /ansible') {
-            sh 'ansible-playbook -i inventory.ini playbook.yml'
-          }
-        }
+        sh 'ansible-playbook -i inventory.ini playbook.yml'
       }
     }
   }
