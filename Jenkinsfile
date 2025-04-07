@@ -14,29 +14,42 @@ pipeline {
 
     stage('Terraform Init') {
       steps {
-        sh 'terraform init'
+        script {
+          docker.image('hashicorp/terraform:light').inside('-v $PWD:/workspace -w /workspace') {
+            sh 'terraform init'
+          }
+        }
       }
     }
 
     stage('Terraform Apply') {
       steps {
-        sh 'terraform apply -auto-approve'
-        sleep(time: 60, unit: "SECONDS")
+        script {
+          docker.image('hashicorp/terraform:light').inside('-v $PWD:/workspace -w /workspace') {
+            sh 'terraform apply -auto-approve'
+          }
+        }
       }
     }
 
     stage('Update Inventory') {
       steps {
         script {
-          def ec2_ip = sh(script: "terraform output -raw ec2_public_ip", returnStdout: true).trim()
-          writeFile file: 'inventory.ini', text: "[web]\n${ec2_ip} ansible_user=ec2-user ansible_ssh_private_key_file=~/.ssh/Key1.ppk"
+          def ec2_ip = docker.image('hashicorp/terraform:light').inside('-v $PWD:/workspace -w /workspace') {
+            sh(script: "terraform output -raw ec2_public_ip", returnStdout: true).trim()
+          }
+          writeFile file: 'inventory.ini', text: "[web]\n${ec2_ip} ansible_user=ec2-user ansible_ssh_private_key_file=~/.ssh/Key1.pem"
         }
       }
     }
 
     stage('Run Ansible') {
       steps {
-        sh 'ansible-playbook playbook.yml'
+        script {
+          docker.image('willhallonline/ansible:latest').inside('-v $PWD:/ansible -w /ansible') {
+            sh 'ansible-playbook -i inventory.ini playbook.yml'
+          }
+        }
       }
     }
   }
