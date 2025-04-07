@@ -113,7 +113,7 @@ resource "aws_instance" "web" {
     connection {
       type        = "ssh"
       user        = "ec2-user"
-      private_key = file("~/.ssh/your-key.pem") # adjust path to your PEM file
+      private_key = file("~/.ssh/Key1.ppk") # adjust path to your PEM file
       host        = self.public_ip
     }
   }
