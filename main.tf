@@ -94,20 +94,14 @@ resource "aws_instance" "web" {
   ami           = data.aws_ami.amazon_linux.id
   instance_type = "t2.micro"
   subnet_id     = aws_subnet.public_subnet.id
-  key_name      = "Key1" # change this to your actual EC2 key name
+  key_name      = "terraform-project" # change this to your actual EC2 key name
   security_groups = [aws_security_group.ec2_sg.id]
 
   tags = {
     Name = "JenkinsDemoInstance"
   }
 
- user_data = <<-EOF
-                   #!/bin/bash
-                   sudo yum update -y
-                   sudo yum install httpd -y
-                   sudo echo 'private ec2 in az1' > /var/www/html/index.html 
-                   sudo systemctl enable --now httpd
-                   EOF
+
 }
 
 # 9. Output the public IP
