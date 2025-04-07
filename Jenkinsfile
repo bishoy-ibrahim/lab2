@@ -2,8 +2,8 @@ pipeline {
   agent any
 
   tools {
-    terraform 'terraform-1.3'   // Name from Global Tool Configuration
-    ansible 'ansible-2.10'      // Name from Global Tool Configuration
+    terraform 'terraform'   // Name from Global Tool Configuration
+    ansible 'ansible'      // Name from Global Tool Configuration
   }
 
   environment {
