@@ -101,22 +101,13 @@ resource "aws_instance" "web" {
     Name = "JenkinsDemoInstance"
   }
 
-  provisioner "remote-exec" {
-    inline = [
-      "sudo yum update -y",
-      "sudo yum install -y httpd",
-      "sudo systemctl start httpd",
-      "sudo systemctl enable httpd",
-      "echo '<h1>Hello from Terraform EC2</h1>' | sudo tee /var/www/html/index.html"
-    ]
-
-    connection {
-      type        = "ssh"
-      user        = "ec2-user"
-      private_key = file("~/.ssh/Key1.ppk") # adjust path to your PEM file
-      host        = self.public_ip
-    }
-  }
+ user_data = <<-EOF
+                   #!/bin/bash
+                   sudo yum update -y
+                   sudo yum install httpd -y
+                   sudo echo 'private ec2 in az1' > /var/www/html/index.html 
+                   sudo systemctl enable --now httpd
+                   EOF
 }
 
 # 9. Output the public IP
