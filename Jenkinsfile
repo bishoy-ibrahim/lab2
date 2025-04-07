@@ -1,5 +1,9 @@
 pipeline {
   agent any
+    tools {
+    terraform 'terraform'   // Name from Global Tool Configuration
+    ansible 'ansible'      // Name from Global Tool Configuration
+  }
 
   environment {
     TF_VAR_region = 'us-east-1'
